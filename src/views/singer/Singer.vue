@@ -9,6 +9,7 @@
 import { getSingerList } from "@/network/singer";
 import singer from "@/common/js/singer.js";
 import ListView from "@/components/content/listview/listView";
+import {mapMutations} from 'vuex'
 
 const HOT_NAME = "热门";
 const HOT_SINGER_LEN = 10;
@@ -33,6 +34,7 @@ export default {
       this.$router.push({
         path:`/singer/${singer.id}`
       })
+      this.setSinger(singer)
     },
     _normalizeSinger(list) {
       let map = {
@@ -87,6 +89,9 @@ export default {
         this.singers = res.data.list;
       });
     },
+    ...mapMutations( {
+      setSinger: 'SET_SINGER'
+    })
   },
 };
 </script>

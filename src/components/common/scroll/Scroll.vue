@@ -20,7 +20,7 @@ export default {
     },
     datas: {
       type: Array,
-      default: [],
+      default: () => [],
     },
     listenScroll: {
       type: Boolean,
