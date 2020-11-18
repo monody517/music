@@ -6,7 +6,7 @@
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="play-wrapper">
-        <div ref="playBtn" v-show="songs.length > 0" class="play">
+        <div ref="playBtn" v-show="songs.length > 0" class="play" @click="randomPlay">
           <i class="icon-play"></i>
           <span class="text">随机播放全部</span>
         </div>
@@ -22,7 +22,7 @@
       ref="list"
     >
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list @select="selectSong" :songs="songs"></song-list>
       </div>
     </scroll>
   </div>
@@ -31,6 +31,7 @@
 <script type="text/ecmascript-6">
 import SongList from "./SongList";
 import Scroll from "@/components/common/scroll/Scroll";
+import { mapActions, mapGetters } from "vuex";
 
 const RESOLVE_HEIGHT = 40;
 export default {
@@ -71,6 +72,16 @@ export default {
     back() {
       this.$router.back();
     },
+    selectSong(song, index) {
+      this.selectplay({
+        list: this.songs,
+        index,
+      });
+    },
+    randomPlay() {
+      this.randomplay({list:this.songs})
+    },
+    ...mapActions(["selectplay","randomplay"]),
   },
   created() {
     this.probeType = 3;
@@ -86,10 +97,10 @@ export default {
       let zIndex = 0;
       let scale = 1;
       this.$refs.layer.style["transform"] = `translate3d(0,${translateY}px,0)`;
-      const percent = Math.abs(newVal / this.imgHeight)
-      if(newVal > 0){
+      const percent = Math.abs(newVal / this.imgHeight);
+      if (newVal > 0) {
         scale = 1 + percent;
-        zIndex = 10
+        zIndex = 10;
       }
       if (newVal < this.minTransalteY) {
         zIndex = 10;
@@ -108,6 +119,7 @@ export default {
 };
 </script>
 
+ 
 <style scoped lang="stylus" rel="stylesheet/stylus">
 @import '~common/stylus/variable';
 @import '~common/stylus/mixin';
@@ -215,6 +227,7 @@ export default {
 
 .song-list-wrapper {
   padding: 20px 30px;
+  margin-top :-20px;
 }
 
 .loading-container {

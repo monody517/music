@@ -12,6 +12,7 @@ import MusicList from "@/components/content/music-list/MusicList";
 import { getSingerDetail } from "@/network/singer";
 import { createSong } from "@/common/js/song";
 import { mapGetters } from "vuex";
+import {getSongVkey} from "@/common/js/song";
 
 export default {
   name: "SingerDetail",
