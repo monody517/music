@@ -22,7 +22,7 @@
       ref="list"
     >
       <div class="song-list-wrapper">
-        <song-list @select="selectSong" :songs="songs"></song-list>
+        <song-list :rank="rank" @select="selectSong" :songs="songs"></song-list>
       </div>
     </scroll>
   </div>
@@ -53,6 +53,10 @@ export default {
       type: Array,
       default: [],
     },
+    rank: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {

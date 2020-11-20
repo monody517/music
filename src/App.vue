@@ -12,7 +12,6 @@
 <script>
 import MHeader from "@/components/content/m-header/m-header";
 import Tab from "@/components/content/tab/tab";
-import player from "@/views/player/player"
 import Player from './views/player/player.vue';
 export default {
   name: "App",

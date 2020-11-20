@@ -41,35 +41,6 @@ export default class Song {
   }
 }
 
-export function getSongVkey(songmid, callback) {
-  wx.request({
-    url: 'https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg',
-    data: {
-      // callback: 'musicJsonCallback',
-      loginUin: 3051522991,
-      format: 'jsonp',
-      platform: 'yqq',
-      needNewCode: 0,
-      cid: 205361747,
-      uin: 3051522991,
-      guid: 5931742855,
-      songmid: songmid,
-      filename: 'C400' + songmid + '.m4a'
-    },
-    method: 'GET',
-    header: {
-      'content-Type': 'application/json'
-    },
-    success: function (res) {
-      if (res.statusCode == 200) {
-        console.log("请求VKey成功")
-        console.log(res.data)
-        callback(res.data);
-      }
-    }
-  })
-}
-
 export function createSong(musicData) {
   return new Song({
     id: musicData.songid,

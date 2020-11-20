@@ -12,7 +12,7 @@ import MusicList from "@/components/content/music-list/MusicList";
 import { getSingerDetail } from "@/network/singer";
 import { createSong } from "@/common/js/song";
 import { mapGetters } from "vuex";
-import {getSongVkey} from "@/common/js/song";
+
 
 export default {
   name: "SingerDetail",
@@ -27,12 +27,6 @@ export default {
     };
   },
   computed: {
-    // title() {
-    //   return this.singer.name;
-    // },
-    // bgImg() {
-    //   return this.singer.avatar;
-    // },
     ...mapGetters(['singer'])
   },
   methods: {
@@ -40,19 +34,19 @@ export default {
       if (!this.singer.id) {
         this.$router.push("/singer")
         return
-      console.log(this.singer);
+      
       }
       getSingerDetail(this.singer.id).then((res) => {
         this.song = this._normalizeSongs(res.data.list);
         this.title = res.data.singer_name;
         this.bgImg = this.singer.avatar;
-        console.log(this.song);
       });
     },
     _normalizeSongs(list) {
       let ret = [];
       list.forEach((item) => {
-        let { musicData } = item;
+        let  {musicData}  = item;
+        console.log(musicData)
         if (musicData.songid && musicData.albummid) {
           ret.push(createSong(musicData));
         }
@@ -62,6 +56,7 @@ export default {
   },
   created() {
     this._getDetail();
+    console.log(this.singer)
   },
 };
 </script>

@@ -5,8 +5,15 @@ import Rank from '@/views/rank/Rank'
 import Singer from '@/views/singer/Singer'
 import Search from '@/views/search/Search'
 import SingerDetail from '../components/content/detail/singer-detail'
+import DescDetail from '../components/content/detail/desc-detail'
+import RankDetail from '../components/content/detail/rank-detail'
 
 Vue.use(Router)
+const originalPush = Router.prototype.push
+
+Router.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
 
 export default new Router({
   routes: [
@@ -16,11 +23,21 @@ export default new Router({
     },
     {
       path: '/recommend',
-      component: Recommend
+      component: Recommend,
+      children: [{
+        path: ':id',
+        component: DescDetail
+      }
+      ]
     },
     {
       path: '/rank',
-      component: Rank
+      component: Rank,
+      children: [{
+        path: ':id',
+        component: RankDetail
+      }
+      ]
     },
     {
       path: '/singer',
