@@ -19,7 +19,6 @@ export default {
   },
   mounted() {
     this._getSongList();
-    console.log(this.disc);
   },
   computed: {
     title() {

@@ -10,16 +10,38 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
+    // proxyTable: {
+    //   '/':{
+    //     target:'https://c.y.qq.com',
+    //     secure:false,
+    //     changeOrigin:true,
+    //     pathRewrite: {
+    //       '^/api': '/'
+    //     },
+    //     headers: {
+    //       referer: 'https://c.y.qq.com'
+    //     }
+    //   }
+    // },
     proxyTable: {
-      '/':{
-        target:'https://c.y.qq.com',
-        secure:false,
-        changeOrigin:true,
-        pathRewrite: {
-          '^/api': '/'
+      '/api/getDiscList': {
+        target: 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg',
+        bypass: function (req, res, proxyOptions) {
+          req.headers.referer = 'https://c.y.qq.com';
+          req.headers.host = 'c.y.qq.com';
         },
-        headers: {
-          referer: 'https://c.y.qq.com'
+        pathRewrite: {
+          '^/api/getDiscList': ''
+        }
+      },
+      '/api/getSongList': {
+        target: 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg',
+        bypass: function (req, res, proxyOptions) {
+          req.headers.referer = 'https://c.y.qq.com';
+          req.headers.host = 'c.y.qq.com';
+        },
+        pathRewrite: {
+          '^/api/getSongList': ''
         }
       }
     },
@@ -32,7 +54,7 @@ module.exports = {
     notifyOnErrors: true,
     poll: false, // https://webpack.js.org/configuration/dev-server/#devserver-watchoptions-
 
-    
+
     /**
      * Source Maps
      */

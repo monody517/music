@@ -68,7 +68,6 @@ export default {
       this.$router.push({
         path: `/recommend/${item.dissid}`,
       });
-      console.log(item)
       this.setDisc(item);
     },
     loadImg() {
