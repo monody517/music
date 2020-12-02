@@ -20,8 +20,8 @@
         </div>
       </div>
     </div>
-    <div class="search-result">
-        <SuggestList :query="query"></SuggestList>
+    <div class="search-result" v-show="query">
+      <SuggestList :query="query"></SuggestList>
     </div>
   </div>
 </template>
@@ -39,7 +39,7 @@ export default {
   data() {
     return {
       hotKey: [],
-      query:''
+      query: "",
     };
   },
   mounted() {
@@ -55,9 +55,9 @@ export default {
     addQuery(query) {
       this.$refs.searchBox.setQuery(query);
     },
-    queryChange(query){
-        this.query=query
-    }
+    queryChange(query) {
+      this.query = query;
+    },
   },
 };
 </script>
@@ -84,5 +84,12 @@ export default {
     font-size: $font-size-medium;
     color: $color-text-d;
   }
+}
+
+.search-result {
+  position: fixed
+  width: 100%;
+  top: 178px;
+  bottom: 0;
 }
 </style>

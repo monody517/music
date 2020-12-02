@@ -32,7 +32,7 @@ export default {
   methods: {
     _getMusicList() {
       getMusicList(this.topList.id).then((res) => {
-        console.log(res);
+        console.log(res)
         this.title = res.topinfo.ListName;
         this.songs = this._normalizeSongs(res.songlist);
         this.bgImg = this.songs[0].image

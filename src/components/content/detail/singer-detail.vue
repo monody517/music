@@ -46,7 +46,6 @@ export default {
       let ret = [];
       list.forEach((item) => {
         let  {musicData}  = item;
-        console.log(musicData)
         if (musicData.songid && musicData.albummid) {
           ret.push(createSong(musicData));
         }
@@ -56,7 +55,7 @@ export default {
   },
   created() {
     this._getDetail();
-    console.log(this.singer)
+    
   },
 };
 </script>

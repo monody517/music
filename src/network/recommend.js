@@ -42,16 +42,20 @@ export function getSongList(disstid) {
     disstid,
     type: 1,
     json: 1,
+    g_tk: 808397969,
     utf8: 1,
     onlysong: 0,
-    platform: 'yqq',
+    new_format: 1,
+    platform: 'yqq.json',
     hostUin: 0,
     needNewCode: 0,
+    format: 'json',
+    inCharset: 'utf8'
   })
 
   return axios.get(url, {
     params: data
   }).then((res) => {
-    return Promise.resolve(res.data)
+    return Promise.resolve(res)
   })
 }

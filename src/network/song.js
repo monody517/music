@@ -1,9 +1,9 @@
-import { commonParams } from './config'
+import { commonParams } from '@/network/config'
 import axios from 'axios'
 
+// 歌词接口
 export function getLyric(mid) {
     const url = '/api/lyric'
-
     const data = Object.assign({}, commonParams, {
         songmid: mid,
         platform: 'yqq',
@@ -13,10 +13,9 @@ export function getLyric(mid) {
         pcachetime: +new Date(),
         format: 'json'
     })
-
     return axios.get(url, {
         params: data
     }).then((res) => {
         return Promise.resolve(res.data)
     })
-}   
+}  

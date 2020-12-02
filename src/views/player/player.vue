@@ -19,16 +19,47 @@
           <h1 class="title" v-html="currentSong.name"></h1>
           <h2 class="subtitle" v-html="currentSong.singer"></h2>
         </div>
-        <div class="middle">
-          <div class="middle-l">
+        <div
+          class="middle"
+          @touchstart.prevent="middleTouchStart"
+          @touchmove.prevent="middleTouchMove"
+          @touchend.prevent="middleTouchEnd"
+        >
+          <div class="middle-l" ref="cd">
             <div class="cd-wrapper" ref="cdWrapper">
               <div class="cd" :class="cdCls">
                 <img class="img" :src="currentSong.image" />
               </div>
             </div>
+            <div class="oneLyric">
+              <div class="playing-lyric">{{ playingLyric }}</div>
+            </div>
           </div>
+          <scroll
+            class="middle-r"
+            ref="lyricList"
+            :data="currentLyric && currentLyric.lines"
+          >
+            <div class="lyric-wrapper">
+              <div v-if="currentLyric">
+                <p
+                  class="text"
+                  ref="lyricLine"
+                  :class="{ current: currentLyricNum === index }"
+                  v-for="(line, index) in currentLyric.lines"
+                  :key="index"
+                >
+                  {{ line.txt }}
+                </p>
+              </div>
+            </div>
+          </scroll>
         </div>
         <div class="bottom">
+          <div class="dot-wrapper">
+            <span class="dot" :class="{ active: dotActive === 'cd' }"></span>
+            <span class="dot" :class="{ active: dotActive === 'lyric' }"></span>
+          </div>
           <div class="progress-wrapper">
             <span class="time time-l">{{ format(currentTime) }}</span>
             <Progress
@@ -73,6 +104,9 @@
             <i class="icon-mini" :class="playIcon"></i>
           </ProgressCircle>
         </div>
+        <div class="control" @click.stop="showPlayList">
+          <i class="icon-playlist"></i>
+        </div>
       </div>
     </transition>
     <audio
@@ -83,6 +117,7 @@
       @timeupdate="updateTime"
       @ended="end"
     ></audio>
+    <PlayList ref="playlist"></PlayList>
   </div>
 </template>
 
@@ -91,23 +126,33 @@ import { mapGetters, mapMutations } from "vuex";
 import animations from "create-keyframe-animation";
 import { prefixStyle } from "@/common/js/dom.js";
 import Progress from "./childComps/Progress";
+import PlayList from "./childComps/PlayList";
 import ProgressCircle from "./childComps/ProgressCircle";
 import { playMode } from "@/common/js/config.js";
 import { shuffle } from "@/common/js/util.js";
+import Lyric from "lyric-parser";
+import Scroll from "@/components/common/scroll/Scroll";
 
 const transform = prefixStyle("transform");
+const transitionDuration = prefixStyle("transitionDuration");
 
 export default {
   name: "player",
   components: {
     Progress,
     ProgressCircle,
+    PlayList,
+    Scroll,
   },
   data() {
     return {
       songReady: false,
       currentTime: 0,
       radius: 32,
+      currentLyric: null,
+      currentLyricNum: 0,
+      dotActive: "cd",
+      playingLyric: "",
     };
   },
   computed: {
@@ -137,12 +182,18 @@ export default {
         : "icon-random";
     },
   },
+  created() {
+    this.touch = {};
+  },
   methods: {
     back() {
       this.setFullScreen(false);
     },
     open() {
       this.setFullScreen(true);
+    },
+    showPlayList() {
+      this.$refs.playlist.show();
     },
     enter(el, done) {
       const { x, y, scale } = this.getPosAndSCale();
@@ -203,14 +254,14 @@ export default {
     },
     end() {
       if (this.mode === playMode.loop) {
-        this.loop()
+        this.loop();
       } else {
         this.nextSong();
       }
     },
     loop() {
-      this.$refs.audio.currentTime = 0
-      this.$refs.audio.play()
+      this.$refs.audio.currentTime = 0;
+      this.$refs.audio.play();
     },
     changeMode() {
       const mode = (this.mode + 1) % 3;
@@ -272,6 +323,88 @@ export default {
         this.setPlayingState(!this.playing);
       }
     },
+    getLyric() {
+      this.currentSong.getLyric().then((lyric) => {
+        this.currentLyric = new Lyric(lyric, this.handleLyric);
+        if (this.playing) {
+          this.currentLyric.play();
+        }
+      }).catch(() => {
+        this.currentLyric = null
+          this.playingLyric = ''
+          this.currentLineNum = 0
+      });
+    },
+    handleLyric({ lineNum, txt }) {
+      this.currentLyricNum = lineNum;
+      if (lineNum > 5) {
+        let lenEl = this.$refs.lyricLine[lineNum - 5];
+        this.$refs.lyricList.scrollToElement(lenEl, 1000);
+      } else {
+        this.$refs.lyricList.scrollTo(0, 0, 1000);
+      }
+      this.playingLyric = txt;
+    },
+    middleTouchStart(e) {
+      this.touch.initiated = true;
+      const touch = e.touches[0];
+      this.touch.startX = touch.pageX;
+      this.touch.startY = touch.pageY;
+    },
+    middleTouchMove(e) {
+      if (!this.touch.initiated) {
+        return;
+      }
+      const touch = e.touches[0];
+      const deltaX = touch.pageX - this.touch.startX;
+
+      const deltaY = touch.pageY - this.touch.startY;
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
+      }
+      const left = this.dotActive === "cd" ? 0 : -window.innerWidth;
+      const offSetWidth = Math.min(
+        0,
+        Math.max(-window.innerWidth, left + deltaX)
+      );
+      this.touch.percent = Math.abs(offSetWidth / window.innerWidth);
+      this.$refs.lyricList.$el.style[
+        transform
+      ] = `translate3d(${offSetWidth}px,0,0)`;
+      this.$refs.lyricList.$el.style[transitionDuration] = 0;
+      this.$refs.cd.style.opacity = 1 - this.touch.percent;
+      this.$refs.cd.style[transitionDuration] = 0;
+    },
+    middleTouchEnd(e) {
+      let offSetWidth;
+      let opacity;
+      if (this.dotActive === "cd") {
+        if (this.touch.percent > 0.1) {
+          offSetWidth = -window.innerWidth;
+          this.dotActive = "lyric";
+          opacity = 0;
+        } else {
+          offSetWidth = 0;
+          opacity = 1;
+        }
+      } else {
+        if (this.touch.percent < 0.9) {
+          offSetWidth = 0;
+          this.dotActive = "cd";
+          opacity = 1;
+        } else {
+          offSetWidth = -window.innerWidth;
+          opacity = 0;
+        }
+      }
+      const time = 300;
+      this.$refs.lyricList.$el.style[
+        transform
+      ] = `translate3d(${offSetWidth}px,0,0)`;
+      this.$refs.lyricList.$el.style[transitionDuration] = `${time}ms`;
+      this.$refs.cd.style.opacity = opacity;
+      this.$refs.cd.style[transitionDuration] = `${time}ms`;
+    },
     ...mapMutations({
       setFullScreen: "SET_FULL_SCREEN",
       setPlayingState: "SET_PLAYING",
@@ -301,6 +434,7 @@ export default {
           return;
         }
         this.$refs.audio.play();
+        this.getLyric();
       }, 1000);
     },
     playing(newPlaying) {
@@ -410,6 +544,45 @@ export default {
           animation-play-state: paused;
         }
       }
+
+      .oneLyric {
+        display: inline-block;
+        width: 80%;
+        margin: 30px 10%;
+        text-align: center;
+
+        .playing-lyric {
+          height: 30px;
+          line-height: 30px;
+          font-size: $font-size-medium;
+          color: $color-text-l;
+        }
+      }
+    }
+
+    .middle-r {
+      display: inline-block;
+      vertical-align: top;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+
+      .lyric-wrapper {
+        width: 80%;
+        margin: 0 auto;
+        overflow: hidden;
+        text-align: center;
+
+        .text {
+          line-height: 32px;
+          color: $color-text-l;
+          font-size: $font-size-medium;
+
+          &.current {
+            color: $color-text;
+          }
+        }
+      }
     }
   }
 
@@ -417,6 +590,24 @@ export default {
     position: absolute;
     bottom: 50px;
     width: 100%;
+
+    .dot-wrapper {
+      text-align: center;
+
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: $color-text-l;
+
+        &.active {
+          width: 20px;
+          border-radius: 5px;
+          background: $color-text-ll;
+        }
+      }
+    }
 
     .progress-wrapper {
       display: flex;
@@ -548,6 +739,9 @@ export default {
       top: 0;
       left: 0;
       font-size: 32px;
+    }
+
+    .icon-playlist {
     }
   }
 

@@ -2,12 +2,16 @@
 <template>
   <div class="suggest">
     <ul class="suggest-list">
-      <li class="suggest-item">
+      <li
+        class="suggest-item"
+        v-for="(item, index) in SuggestList"
+        :key="index"
+      >
         <div class="icon">
           <i></i>
         </div>
         <div class="name">
-          <p class="text"></p>
+          <p class="text">{{ item.songname }}</p>
         </div>
       </li>
     </ul>
@@ -21,6 +25,7 @@ export default {
   data() {
     return {
       page: 1,
+      SuggestList: [],
     };
   },
   props: {
@@ -36,7 +41,9 @@ export default {
   methods: {
     search() {
       search(this.query, this.page, this.showSinger).then((res) => {
-        console.log(res);
+        const data = res.data.data;
+        console.log(data);
+        this.SuggestList = data.song.list;
       });
     },
   },
@@ -54,12 +61,18 @@ export default {
   height: 100%, overflow hidden;
 
   .suggest-list {
+    margin-top: -49px;
     padding: 0 30px;
+    background: $color-background;
+    color: $color-text-d;
 
     .suggest-item {
       display: flex;
+      box-sizing: border-box;
       align-items: center;
-      padding-bottom: 20px;
+      height: 44px;
+      font-size: $font-size-medium;
+      border-bottom: 0.5px solid $color-text-d;
     }
 
     .icon {

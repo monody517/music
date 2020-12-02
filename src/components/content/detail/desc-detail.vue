@@ -2,7 +2,7 @@
 <template>
   <transition name="slide" appear>
     <div class="desc-detail">
-      <MusicList :title="title" :bgImg="bgImg"></MusicList>
+      <MusicList :title="title" :bgImg="bgImg" :songs="songs"></MusicList>
     </div>
   </transition>
 </template>
@@ -11,11 +11,17 @@
 import MusicList from "@/components/content/music-list/MusicList";
 import { getSongList } from "@/network/recommend";
 import { mapGetters } from "vuex";
+import { createSong } from "@/common/js/song";
 
 export default {
   name: "DescDetail",
   components: {
     MusicList,
+  },
+  data() {
+    return {
+      songs: [],
+    };
   },
   mounted() {
     this._getSongList();
@@ -31,9 +37,23 @@ export default {
   },
   methods: {
     _getSongList() {
-      getSongList(this.disc.dissid).then((res) => {
-        console.log(res);
+      getSongList(this.disc.dissid).then((res) => {       
+        const data = res.data.cdlist[0];
+        this.songs = this._normalizeSongs(data.songlist);
       });
+    },
+    _normalizeSongs(list) {
+      let ret = [];
+      list.forEach((musicData) => {
+        
+        const songid= musicData.id 
+        const albummid = musicData.ksong.mid
+        
+        if (songid && albummid) {
+          ret.push(createSong(musicData));
+        }
+      });
+      return ret;
     },
   },
 };

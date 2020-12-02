@@ -15,43 +15,37 @@ export default class Song {
   }
 
   getLyric() {
-    // if (this.lyric) {
-    //   return Promise.resolve(this.lyric)
-    // }
-
-    // return new Promise((resolve, reject) => {
-    //   getLyric(this.mid).then((res) => {
-    //     if (res.retcode === ERR_OK) {
-    //       this.lyric = Base64.decode(res.lyric)
-    //       resolve(this.lyric)
-    //     } else {
-    //       reject('no lyric')
-    //     }
-    //   })
-    // })
+    // 当已经请求过歌词时，不必再请求
     if (this.lyric) {
-      return Promise.resolve(this.lyric)
+      return Promise(this.lyric)
     }
-    getLyric(this.mid).then((res) => {
-      if (res.retcode === ERR_OK) {
-        this.lyric = res.lyric
-        console.log(this.lyric)
-      }
+    return new Promise((resolve, reject) => {
+      getLyric(this.mid).then((res) => {
+        // 解码base64数据
+        if (res.retcode === ERR_OK) {
+          this.lyric = Base64.decode(res.lyric)
+          resolve(this.lyric)
+          console.log(this.lyric)
+        } else {
+          reject(new Error('no lyric'))
+        }
+      })
     })
   }
 }
 
 export function createSong(musicData) {
   return new Song({
-    id: musicData.songid,
-    mid: musicData.songmid,
+    id: musicData.songid || musicData.id,
+    mid: musicData.songmid || musicData.ksong.mid,
     singer: filterSinger(musicData.singer),
-    name: musicData.songname,
-    album: musicData.albumname,
+    name: musicData.songname || musicData.name,
+    album: musicData.albumname || musicData.album.name,
     duration: musicData.interval,
-    image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid}.jpg?max_age=2592000`,
+    image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid || musicData.album.mid}.jpg?max_age=2592000`,
     // url: `http://ws.stream.qqmusic.qq.com/${musicData.songid}.m4a?fromtag=46`
-    url: `http://ws.stream.qqmusic.qq.com/C400001CGh5Y1Wnuju.m4a?guid=6690626051&vkey=0AB99059070C64BA06E94119F7B1D6824E217CF343F9CE1FA6AF90EB87DA084FEAA463E404FFF5BC333BC96EB74B169369CCDB1619EE4A1D&uin=0&fromtag=66`
+    url: `http://isure.stream.qqmusic.qq.com/C4000043aj132xwlEf.m4a?guid=6690626051&vkey=37663DD73021068BC071E1A6041652DFBC5FA8DA3AFD8770A998B35DA65290DBAC4C3742CB9B83D41A614483D21BFC63B449FA747C390C12&uin=0&fromtag=66`,
+
   })
 }
 
